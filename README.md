@@ -1,8 +1,8 @@
-> The word is about, there's something evolving
-> Whatever may come, the world keeps revolving
-> They say the next big thing is here
-> That the revolution's near
-> But to me, it seems quite clear
+> The word is about, there's something evolving  
+> Whatever may come, the world keeps revolving  
+> They say the next big thing is here  
+> That the revolution's near  
+> But to me, it seems quite clear  
 > That it's all just a little bit of history repeating
 >
 > [Propellerheads feat: Miss Shirley Bassey - History Repeating](https://www.youtube.com/watch?v=yzLT6_TQmq8&list=RDyzLT6_TQmq8&start_radio=1)
