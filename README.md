@@ -424,9 +424,22 @@ Others can now review your clean, rebased changes.
 
 Update your local main after PR merge (or after other people’s changes).
 
-After your PR is merged into main:
+After your PR is merged into main (created PR and self accepted it):
 
 git checkout main
+
 git pull origin main
 
 Now local main is up-to-date with the trunk.
+
+Finally, update README.md and make the release for the public:
+
+git add .
+git commit -m "Final Makefile and README"
+git push origin main
+
+HEAD → refs/heads/main
+refs/heads/feat → 4e45f17 (B)
+refs/heads/main → 037bd00 (Final Makefile and README)
+refs/remotes/origin/feat → 4e45f17 (B)
+refs/remotes/origin/main → 037bd00 (Final Makefile and README)
