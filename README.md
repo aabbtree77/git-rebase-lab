@@ -41,8 +41,10 @@ To go slowly to understand what rebase means.
 
 ## Stage 0: Clone the empty remote, rm/add remote
 
+```bash
 git clone https://github.com/aabbtree77/git-rebase-lab.git
 cd ~/git-rebase-lab
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -57,9 +59,11 @@ In order to avoid
 
 set up Github tokens and run:
 
+```bash
 git remote rm origin
 git remote add origin https://aabbtree77:$GITHUB_ACCESS_TOKEN@github.com/aabbtree77/git-rebase-lab.git
 git remote show origin
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -68,7 +72,9 @@ refs/heads/main → 369da27 (Initial commit)
 
 The initial commit comes from github and is no commit:
 
+```bash
 git status
+```
 
 ```bash
 On branch main
@@ -77,16 +83,20 @@ nothing to commit, working tree clean
 
 ## Stage 1: Create first commit (A)
 
+```bash
 echo A > file.txt
 git add file.txt
 git commit -m "A"
+```
 
 ```bash
 HEAD → refs/heads/main
 refs/heads/main → 55d14ba (A)
 ```
 
+```bash
 git push origin main
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -96,7 +106,9 @@ refs/remotes/origin/main → 55d14ba (A)
 
 ## Stage 2: Create feature branch (feat)
 
+```bash
 git checkout -b feat
+```
 
 ```bash
 HEAD → refs/heads/feat
@@ -107,8 +119,10 @@ refs/remotes/origin/main → 55d14ba (A)
 
 ## Stage 3: Create commit B on feat
 
+```bash
 echo B >> file.txt
 git commit -am "B"
+```
 
 ```bash
 HEAD → refs/heads/feat
@@ -121,9 +135,11 @@ refs/remotes/origin/main → 55d14ba (A)
 
 Open a new terminal.
 
+```bash
 git clone https://github.com/aabbtree77/git-rebase-lab.git dev2
 cd dev2
 cp ~/git-rebase-lab/Makefile ./
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -138,8 +154,10 @@ dev2 is behind local feat branch because B was never pushed to main.
 
 In dev2:
 
+```bash
 echo C >> file.txt
 git commit -am "C"
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -154,11 +172,15 @@ Again, before pushing, in order to avoid
 
 from dev2 run:
 
+```bash
 git remote rm origin
 git remote add origin https://aabbtree77:$GITHUB_ACCESS_TOKEN@github.com/aabbtree77/git-rebase-lab.git
 git remote show origin
+```
 
+```bash
 git push origin main
+```
 
 ```bash
 HEAD → refs/heads/main
@@ -186,7 +208,9 @@ Even though remote main is now C.
 
 ## Stage 7: Fetch in dev1
 
+```bash
 git fetch origin
+```
 
 ```bash
 HEAD → refs/heads/feat
@@ -202,7 +226,9 @@ Nothing rebased. Just remote-tracking ref moved.
 
 With rebase, we want to rewrite local branch feat. Rebase is a local history rewrite. It moves local branch pointer. Remote is not touched. dev2 is not touched.
 
+```bash
 git rebase origin/main
+```
 
 ```bash
 Auto-merging file.txt
@@ -225,7 +251,9 @@ refs/remotes/origin/main → 02bf132 (C)
 
 This is not an error. This is the interesting part. Merge conflict.
 
+```bash
 git status
+```
 
 ```bash
 interactive rebase in progress; onto 02bf132
@@ -347,10 +375,10 @@ C
 B
 ```
 
-and run
-
+```bash
 git add .
 git rebase --continue
+```
 
 It will show the prompt in nano with B commit's message. The best is to leave it as it is. We are not creating a new B, we are recreating it with a rewritten feat branch history.
 
@@ -400,7 +428,9 @@ Do not heroically resolve 50-commit rebases from two weeks ago.
 
 Not really. We have rebased, but now we need to submit our work.
 
+```bash
 git push --force-with-lease origin feat
+```
 
 `--force-with-lease` overwrites the remote branch only if it hasn’t changed since you last fetched. Safer than plain --force.
 
@@ -426,20 +456,25 @@ Update your local main after PR merge (or after other people’s changes).
 
 After your PR is merged into main (created PR and self accepted it):
 
+```bash
 git checkout main
-
 git pull origin main
+```
 
 Now local main is up-to-date with the trunk.
 
 Finally, update README.md and make the release for the public:
 
+```bash
 git add .
 git commit -m "Final Makefile and README"
 git push origin main
+```
 
+```bash
 HEAD → refs/heads/main
 refs/heads/feat → 4e45f17 (B)
 refs/heads/main → 037bd00 (Final Makefile and README)
 refs/remotes/origin/feat → 4e45f17 (B)
 refs/remotes/origin/main → 037bd00 (Final Makefile and README)
+```
