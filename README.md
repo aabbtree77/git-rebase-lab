@@ -4,14 +4,12 @@ This is an experiment to understand `git rebase` in the trunk based development 
 
 TBD:
 
-- You branch.
-- You do 3–10 commits.
+- Branch.
+- Do 3 - 10 commits.
 - Meanwhile trunk moves.
-- You rebase.
+- Rebase.
 
-Mermaid with GitGraph is shaky on Firefox. Android does not render any Github Mermaid.
-
-Instead, I will indicate the git state with a complete list of references by running
+I will indicate the git state with a complete list of references by running
 
 ```bash
 make show-refs
@@ -19,7 +17,11 @@ make show-refs
 
 See Makefile.
 
-The branch will have only one commit in order not to be repetitive, but the idea is to rebase
+Showing more figures would be great, but Mermaid with GitGraph is shaky on Firefox. Android does not render any Github Mermaid. See [Git MERGE and REBASE: The Definitive Guide.](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4) for amazing visual explanation.
+
+This repo is an actual demo that does a real rebase. It supplements that visual explanation with a complete precise sequence of git commands. It also explores a bit more the space of git actions from the branch to the trunk.
+
+The branch will have only one commit for the sake of simplicity, but the idea of rebase is to turn
 
 ```bash
 A ── C                    (origin/main)
@@ -35,7 +37,7 @@ A ── C                    (origin/main)
        B1' ── B2' ── B3'  (feat, HEAD)
 ```
 
-To go slowly to understand what rebase means.
+This means rewriting history, matching the B-line to the updated trunk (A-C).
 
 # Preparing Merge Conflict
 
@@ -280,13 +282,13 @@ rebase acts where HEAD is pointing and in the end of Stage 7 it is
 
 HEAD → refs/heads/feat
 
-Therefore rebase rewrites feat:
+rebase then rewrites feat:
 
-- builds the set of all commits (B, B', ...) in feat not in origin/main.
+- constructs a unique set of commits which is just B in this special case of a single commit on feat,
 
-- detaches HEAD which will be reattached to feat when rebase completes. rebase is transactional, we succeed or git rebase --abort.
+- detaches HEAD,
 
-- replays (B, B', ...) onto C, oldest first.
+- replays that unique set (B) onto C, oldest commits in the set first.
 
 Replaying B onto C is not merge. Git:
 
@@ -414,16 +416,6 @@ git rebase --abort
 
 returns you to exact pre-rebase state.
 
-# The Big Picture
-
-- Keep branches small.
-
-- Rebase frequently.
-
-- Use IDE merge tools, e.g. VSCode merge editor.
-
-Do not heroically resolve 50-commit rebases from two weeks ago.
-
 # Fin.
 
 Not really. We have rebased, but now we need to submit our work.
@@ -442,7 +434,19 @@ refs/remotes/origin/feat → 4e45f17 (B)
 refs/remotes/origin/main → 02bf132 (C)
 ```
 
-rebased branch is on the remote.
+Summary:
+
+- HEAD → refs/heads/feat: Your current checkout cursor; all operations affect this branch.
+
+- refs/heads/feat → commit 4e45f17 (B): Local feature branch, rebased on top of C.
+
+- refs/remotes/origin/feat → 4e45f17 (B): Remote tracking branch for feat — now synchronized via force push.
+
+- refs/heads/main → 55d14ba (A): Local main — hasn’t been updated yet.
+
+- refs/remotes/origin/main → 02bf132 (C): Remote main — trunk, includes commit C that your feature was rebased onto.
+
+Rebased branch is on the remote.
 
 Go to GitHub. Open a PR/MR:
 
@@ -450,9 +454,7 @@ Base: main
 
 Compare: feat
 
-Others can now review your clean, rebased changes.
-
-Update your local main after PR merge (or after other people’s changes).
+Others (or just me) can now review your clean, rebased changes.
 
 After your PR is merged into main (created PR and self accepted it):
 
@@ -478,3 +480,162 @@ refs/heads/main → 037bd00 (Final Makefile and README)
 refs/remotes/origin/feat → 4e45f17 (B)
 refs/remotes/origin/main → 037bd00 (Final Makefile and README)
 ```
+
+# After rebase, what happens if we `git push origin main`?
+
+Suppose
+
+```bash
+A ── C (origin/main)
+\
+ D1 ── D2 ── D3 (feat, HEAD)
+```
+
+```bash
+refs/heads/feat → D3
+refs/remotes/origin/main → C
+refs/heads/main → A (or maybe C if pulled later)
+HEAD → feat
+```
+
+```bash
+git push origin main
+```
+
+What happens?
+
+Git tries to update the remote main branch to your local main.
+
+If local main has not moved beyond remote, this is a fast-forward.
+
+In our current example:
+
+local main → A
+origin/main → C
+
+Local main is behind origin/main.
+
+Git will reject push by default, because a non-fast-forward push is dangerous.
+
+```bash
+! [rejected] main -> main (non-fast-forward)
+```
+
+Unless you use:
+
+```bash
+git push --force origin main
+```
+
+Force push will overwrite origin/main to point to your local main.
+
+This is dangerous if other people depend on that remote branch.
+
+# After rebase, what happens if we `git push origin feat`?
+
+```bash
+git push origin feat
+```
+
+Remote origin/feat still points to old B chain.
+
+Your local feat has rewritten commits D1 → D2 → D3.
+
+Git sees that remote history diverged.
+
+Push will be rejected unless you force:
+
+git push --force origin feat
+
+This is normal after rebase.
+
+Key points:
+
+- Rewriting history changes commit hashes.
+
+- Remote still has old commits.
+
+- Force push is necessary to synchronize.
+
+# Safe flow after rebase
+
+Update local remote refs:
+
+```bash
+git fetch origin
+```
+
+Rebase local feat onto main (latest trunk):
+
+```bash
+git rebase origin/main
+```
+
+Resolve conflicts, continue:
+
+```bash
+git rebase --continue
+```
+
+Force push feature branch:
+
+```bash
+git push --force-with-lease origin feat
+```
+
+--force-with-lease ensures you don’t overwrite someone else’s work accidentally.
+
+```bash
+A ── C ── 4e45f17         (origin/feat)
+        \
+         ...                (other trunk commits)
+```
+
+Everyone sees your rebased commit as if it was created on top of the latest main — no messy merge commits.
+
+Old commit aaba28c disappears from active refs, only exists in history temporarily.
+
+Open PR (if using GitHub, GitLab, etc.), others review, merge.
+
+Remote now sees the rewritten commits.
+
+Update your local trunk:
+
+```bash
+git checkout main
+git pull origin main
+```
+
+# Final advice by ChatGPT5:
+
+- Keep branches small.
+
+- Rebase frequently.
+
+- Use IDE merge tools, e.g. VSCode merge editor.
+
+- Do not heroically resolve 50-commit rebases from two weeks ago.
+
+- Never rebase a branch that others are actively working on (unless coordinated).
+
+- For trunk-based development, feature branches are short-lived; force push is safe.
+
+- For shared long-lived branches, you generally avoid force pushes.
+
+# References
+
+[Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
+
+# Appendix: Graph Theory
+
+Rebase is a beautiful complex machinery and Sect. What rebase does is just a sketch which does not mention the important math surrounding it:
+
+- The replay (patching) is `merge-base` and `diff3` algorithms.
+
+- The unique set of commits to replay on C (which was just B), is some reachability theory implemented by
+
+  ```bash
+  git rev-list origin/main..feat
+  ```
+
+History rewriting is tricky...
