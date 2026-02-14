@@ -373,6 +373,26 @@ B
 >>>>>>> aaba28c (B)
 ```
 
+## What patch(A → B) really means
+
+Internally Git uses:
+
+- three-way merge machinery,
+
+- index as staging area,
+
+- patch application logic.
+
+It is not simple textual concatenation.
+
+It uses:
+
+merge-base
+
+diff3 algorithm
+
+Which is why conflict markers appear when overlapping edits occur.
+
 ## Stage 9: Resolving Conflict
 
 Let dev1 accept what dev2 did, and then append "B" to file.txt. This models conflict resolution with content modification by dev1 in its files.
@@ -617,7 +637,7 @@ git checkout main
 git pull origin main
 ```
 
-# Final advice by ChatGPT5:
+# Final advice by ChatGPT5
 
 - Keep branches small.
 
