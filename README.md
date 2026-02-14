@@ -297,21 +297,42 @@ rebase then rewrites feat:
 
 - constructs the set of commits `git rev-list origin/main..feat` which are the commits reachable from feat excluding commits reachable from origin/main. This is a single commit B in our case.
 
-- detaches HEAD,
+- detaches HEAD at C,
 
 - replays that unique set (B) onto C, oldest commits in the set first.
 
-Replaying B onto C is not merge. Git:
+Replaying B onto C is a 3-way merge of trees (snapshots, not branches):
 
-- Takes B.
+- base = parent(B) = A,
 
-- Looks at B’s parent = A.
+- ours = current HEAD = C,
 
-- Computes patch(A → B).
+- theirs = B,
 
-- Applies that patch onto C.
+followed by creation of a new single-parent commit, call it D.
 
-- Creates a brand new commit. Call it D.
+Here “ours“ and “theirs“ are position variables inside 3-way merge call, not some branch indicators.
+
+In Git’s merge machinery:
+
+“ours” = the tree currently checked out,
+
+“theirs” = the tree being merged in,
+
+During rebase:
+
+You are effectively “on” C.
+
+Git says:
+
+“Take the changes introduced by B relative to A
+and integrate them into what is currently checked out.”
+
+Currently checked out = C.
+
+So C becomes “ours”.
+
+B becomes “theirs”.
 
 This new commit D (B rewritten):
 
@@ -331,7 +352,7 @@ Old B still exists in the object database, but is no longer referenced. Eventual
 
 ## Where it stops midway
 
-It stops at "Applies that patch onto C".
+It stops at "replays B onto C".
 
 C is what dev2 did: echo C >> file.txt:
 
@@ -353,7 +374,7 @@ A
 B
 ```
 
-patch(A → B) is +B. Git applies the patch to C commit which has +C w.r.t. A already:
+The 3-way tree merge leads to
 
 ```bash
 CONFLICT (content): Merge conflict in file.txt
@@ -372,26 +393,6 @@ C
 B
 >>>>>>> aaba28c (B)
 ```
-
-## What patch(A → B) really means
-
-Internally Git uses:
-
-- three-way merge machinery,
-
-- index as staging area,
-
-- patch application logic.
-
-It is not simple textual concatenation.
-
-It uses:
-
-merge-base
-
-diff3 algorithm
-
-Which is why conflict markers appear when overlapping edits occur.
 
 ## Stage 9: Resolving Conflict
 
@@ -656,3 +657,47 @@ git pull origin main
 # References
 
 [Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
+
+# Appendix ChatGPT5: How `git rebase` is implemented
+
+[rebase.c](https://github.com/git/git/blob/master/builtin/rebase.c) is a thin orchestration layer:
+
+revision walker decides commit set
+
+merge-base engine decides LCA
+
+merge backend handles 3-way tree merging
+
+sequencer drives commit replay state machine
+
+refs system moves pointers
+
+It’s a choreography of subsystems.
+
+The math is there. It’s just decentralized.
+
+If you want to see the real cathedral
+
+Look at these files:
+
+commit-reach.c → merge base algorithms
+
+revision.c → graph walking
+
+merge-ort.c → modern merge engine
+
+sequencer.c → replay logic
+
+Start in:
+
+sequencer_make_script()
+
+Then:
+
+pick_commits()
+
+Then:
+
+do_pick_commit()
+
+That’s where a commit is actually replayed.
