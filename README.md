@@ -658,7 +658,7 @@ git pull origin main
 
 [Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
 
-# Appendix ChatGPT5: How `git rebase` is implemented
+# Appendix: How `git rebase` is implemented (ChatGPT5)
 
 [rebase.c](https://github.com/git/git/blob/master/builtin/rebase.c) is a thin orchestration layer:
 
