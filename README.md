@@ -28,7 +28,9 @@ See Makefile.
 
 Showing more figures would be great, but Mermaid with GitGraph is shaky on Firefox. Android does not render any Github Mermaid. See [Git MERGE and REBASE: The Definitive Guide.](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4) for amazing visual explanation.
 
-This repo is an actual demo that does a real rebase. It supplements that visual explanation with a complete precise sequence of git commands. It also explores a bit more the space of git actions from the branch to the trunk.
+This repo is an actual demo that does a real rebase. It supplements that visual explanation with precise sequence of git commands. It also explores a bit more the space of git actions.
+
+The theme of git-based workflows is a deep forest just like Haskell monads, the CAP theorem, Js metaframeworks... Reddit, Hacker News are full of discussions proposing to ban `git rebase` or use it even more.
 
 The branch will have only one commit for the sake of simplicity, but the idea of rebase is to turn
 
@@ -293,7 +295,7 @@ HEAD → refs/heads/feat
 
 rebase then rewrites feat:
 
-- constructs a unique set of commits which is just B in this special case of a single commit on feat,
+- constructs the set of commits `git rev-list origin/main..feat` which are the commits reachable from feat excluding commits reachable from origin/main. This is a single commit B in our case.
 
 - detaches HEAD,
 
@@ -634,17 +636,3 @@ git pull origin main
 # References
 
 [Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
-
-# Appendix: Graph Theory
-
-Rebase is a beautiful complex machinery and Sect. What rebase does is just a sketch which does not mention the important math surrounding it:
-
-- The replay (patching) is `merge-base` and `diff3` algorithms.
-
-- The unique set of commits to replay on C (which was just B), is some reachability theory implemented by
-
-  ```bash
-  git rev-list origin/main..feat
-  ```
-
-History rewriting is tricky...
