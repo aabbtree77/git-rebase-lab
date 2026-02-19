@@ -656,7 +656,11 @@ git pull origin main
 
 # References
 
-[Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
+[The Modern Coder. Git MERGE and REBASE: The Definitive Guide](https://www.youtube.com/watch?v=zOnwgxiC0OA&list=PLfU9XN7w4tFzW200TaCP1W9RTE8jRSHU5&index=4)
+
+[ByteByteGo. How Git Works: Explained in 4 Minutes](https://youtu.be/e9lnsKot_SQ?t=71)
+
+[Claes Adamsson. tbdflow](https://github.com/cladam/tbdflow)
 
 # Appendix: How `git rebase` is implemented (ChatGPT5)
 
